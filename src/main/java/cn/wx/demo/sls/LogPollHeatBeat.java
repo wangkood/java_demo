@@ -4,7 +4,6 @@ import com.aliyun.openservices.log.exception.LogException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -82,7 +81,7 @@ public class LogPollHeatBeat {
 
     public Actions actions() {
         synchronized (this) {
-            Actions actions = new Actions(new ArrayList<>(assignedShards.size()), new ArrayList<>());
+            Actions actions = new Actions(assignedShards.size(), heartShards.size() - assignedShards.size());
             for (Integer shard : this.heartShards) {
                 if (assignedShards.contains(shard)) {
                     actions.process.add(shard);
@@ -97,8 +96,13 @@ public class LogPollHeatBeat {
     @Getter
     @AllArgsConstructor
     public static class Actions {
-        private List<Integer> process;
-        private List<Integer> shutdown;
+        private final List<Integer> process;
+        private final List<Integer> shutdown;
+
+        public Actions(int processSize, int shutdownSize) {
+            this.process = new ArrayList<>(processSize);
+            this.shutdown = new ArrayList<>(shutdownSize);
+        }
     }
 
 }
